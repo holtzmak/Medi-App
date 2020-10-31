@@ -37,7 +37,7 @@ As we, the team are not medical professionals we do not have accurate and legiti
 
 The deliverables assigned and set out by our post-seconday software engineering course are as follows:
 1. Project Proposal (see **Project Information** above) (September 25, 2020)
-1. Project Progress Report (link TBA) (October 30, 2020)
+1. [Project Progress Report](https://github.com/holtzmak/Medi-App/blob/main/documentation/Project%20Progress%20Report.pdf) (October 30, 2020)
 1. Project Final Report, Poster, and Presentation Slides (links TBA) (December 4, 2020)
 
 ***
