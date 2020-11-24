@@ -1,37 +1,37 @@
 import unittest
 
-from src.symptom_input_util import get_symptom_list_from_user_symptoms
+from src.get_known_list_from_str import get_known_list_from_str
 
 
-class TestGetSymptomListFromUserSymptoms(unittest.TestCase):
+class TestGetKnownListFromStr(unittest.TestCase):
     def test_user_input_rejected_containing_mistake(self):
         self.assertEqual(
             None,
-            get_symptom_list_from_user_symptoms("feaver cough", ["fever", "cough"]),
+            get_known_list_from_str("feaver cough", ["fever", "cough"]),
         )
 
     def test_user_input_rejected_for_one_symptom(self):
         self.assertEqual(
             None,
-            get_symptom_list_from_user_symptoms("itching", ["fever", "cough"]),
+            get_known_list_from_str("itching", ["fever", "cough"]),
         )
 
     def test_user_input_rejected_for_no_symptom(self):
         self.assertEqual(
             None,
-            get_symptom_list_from_user_symptoms("", ["fever", "cough"]),
+            get_known_list_from_str("", ["fever", "cough"]),
         )
 
     def test_user_input_accepted(self):
         self.assertEqual(
             ["fever", "cough"],
-            get_symptom_list_from_user_symptoms("fever cough", ["fever", "cough"]),
+            get_known_list_from_str("fever cough", ["fever", "cough"]),
         )
 
     def test_user_input_accepted_for_one_symptom(self):
         self.assertEqual(
             ["fever"],
-            get_symptom_list_from_user_symptoms("fever", ["fever", "cough"]),
+            get_known_list_from_str("fever", ["fever", "cough"]),
         )
 
 
