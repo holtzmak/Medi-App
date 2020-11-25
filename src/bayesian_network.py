@@ -1,3 +1,4 @@
+import operator
 from typing import Callable, List
 
 from get_from_csv import get_from_csv
@@ -13,6 +14,7 @@ class BayesianNetworkForDiseasePrediction:
     def __init__(self, get_symptoms_from_user: Callable):
         self.get_symptoms_from_user = get_symptoms_from_user
 
+    # TODO: Make agnostic to symtoms, diseases, filename, etc.
     def predict_with_bayesian_network(self):
         known_symptoms = get_from_csv("Symptom Probability Tables")
         user_symptoms = self.get_full_symptom_set(
@@ -23,7 +25,6 @@ class BayesianNetworkForDiseasePrediction:
             symptom_states,
         ) = self.get_symptom_distributions_and_states(known_symptoms)
         bayesian_networks_of_diseases = list()
-        # TODO: Make agnostic to diseases found in files
         for disease in [
             "Acne",
             "Allergy",
@@ -55,9 +56,12 @@ class BayesianNetworkForDiseasePrediction:
             )
         print(
             "Top 3 predicted diseases are (disease, probability):",
-            sorted(prediction_results.items(), key=lambda item: item[1])[:3],
+            sorted(
+                prediction_results.items(), key=operator.itemgetter(1), reverse=True
+            )[:3],
         )
 
+    # TODO: Make agnostic to number symptoms
     @staticmethod
     def get_full_symptom_set(get_symptoms_from_user: Callable, known_symptoms: List):
         user_symptoms = get_symptoms_from_user([s for s, _, _, _ in known_symptoms])
@@ -66,6 +70,7 @@ class BayesianNetworkForDiseasePrediction:
             symptom_dict[symptom] = 1 if symptom in user_symptoms else 0
         return symptom_dict
 
+    # TODO: Make agnostic to symptoms
     @staticmethod
     def get_symptom_distributions_and_states(known_symptoms: List):
         symptom_distributions = list()
@@ -83,6 +88,7 @@ class BayesianNetworkForDiseasePrediction:
             symptom_states.append((Node(symptom_distribution, name=symptom)))
         return symptom_distributions, symptom_states
 
+    # TODO: Make agnostic to number symptoms
     @staticmethod
     def get_bayesian_network_model(
         symptom_distributions: List,
