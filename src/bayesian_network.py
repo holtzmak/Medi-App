@@ -9,69 +9,99 @@ from pomegranate import (
 )
 
 
-def bayesian_network(get_symptoms_from_user: Callable):
-    known_symptoms = get_from_csv("Symptom Probability Tables")
-    symptoms = get_symptoms_from_user(  # Maybe this should be somewhere else
-        [symptom1 for symptom1, _, _, _ in known_symptoms]
-    )
-    symptom_distributions, symptom_states = get_symptom_distributions_and_states(
-        known_symptoms
-    )
-    # Collect the models for each disease, predict, then collect top 3 predictions
-    # 6 Known diseases at the time of writing
-    acne_model = get_bayesian_network_model(
-        symptom_distributions=symptom_distributions,
-        symptom_states=symptom_states,
-        file_name="Acne Full Conditional Probability Table",
-        disease_name="acne",
-    )
-    print(
-        "Prediction:",
-        acne_model.predict_proba(
-            {
-                "itching": "1",
-                "skin_rash": "0",
-                "chills": "1",
-                "vomiting": "0",
-                "fatigue": "1",
-            }
-        ),
-    )
+class BayesianNetworkForDiseasePrediction:
+    def __init__(self, get_symptoms_from_user: Callable):
+        self.get_symptoms_from_user = get_symptoms_from_user
 
-
-def get_symptom_distributions_and_states(known_symptoms: List):
-    symptom_distributions = []
-    symptom_states = []
-    for (
-        symptom,
-        probability,
-        not_symptom,
-        not_probability,
-    ) in known_symptoms:
-        symptom_distribution = DiscreteDistribution(
-            {"1": float(probability), "0": float(not_probability)}
+    def predict_with_bayesian_network(self):
+        known_symptoms = get_from_csv("Symptom Probability Tables")
+        user_symptoms = self.get_full_symptom_set(
+            self.get_symptoms_from_user, known_symptoms
         )
-        symptom_distributions.append(symptom_distribution)
-        symptom_states.append((Node(symptom_distribution, name=symptom)))
-    return symptom_distributions, symptom_states
+        (
+            symptom_distributions,
+            symptom_states,
+        ) = self.get_symptom_distributions_and_states(known_symptoms)
+        bayesian_networks_of_diseases = list()
+        # TODO: Make agnostic to diseases found in files
+        for disease in [
+            "Acne",
+            "Allergy",
+            "Chicken Pox",
+            "Common Cold",
+            "Drug Reaction",
+            "Psoriasis",
+        ]:
+            bayesian_networks_of_diseases.append(
+                self.get_bayesian_network_model(
+                    symptom_distributions=symptom_distributions,
+                    symptom_states=symptom_states,
+                    file_name=f"{disease} Full Conditional Probability Table",
+                    disease_name=disease,
+                )
+            )
+        prediction_results = dict()
+        for bayes_net in bayesian_networks_of_diseases:
+            symptoms_and_disease_to_predict = list()
+            for s in user_symptoms.values():
+                symptoms_and_disease_to_predict.append(
+                    f"{s}"  # Requires string per API
+                )
+            symptoms_and_disease_to_predict.append(
+                "1"  # Predict the disease as present
+            )
+            prediction_results[bayes_net.name] = bayes_net.probability(
+                [symptoms_and_disease_to_predict]
+            )
+        print(
+            "Top 3 predicted diseases are (disease, probability):",
+            sorted(prediction_results.items(), key=lambda item: item[1])[:3],
+        )
 
+    @staticmethod
+    def get_full_symptom_set(get_symptoms_from_user: Callable, known_symptoms: List):
+        user_symptoms = get_symptoms_from_user([s for s, _, _, _ in known_symptoms])
+        symptom_dict = dict()
+        for symptom, _, _, _ in known_symptoms:
+            symptom_dict[symptom] = 1 if symptom in user_symptoms else 0
+        return symptom_dict
 
-def get_bayesian_network_model(
-    symptom_distributions: List, symptom_states: List, file_name: str, disease_name: str
-):
-    disease_conditional_distribution = []
-    for (s1, s2, s3, s4, s5, d, p) in get_from_csv(file_name):
-        disease_conditional_distribution.append([s1, s2, s3, s4, s5, d, float(p)])
-    disease_distribution = ConditionalProbabilityTable(
-        disease_conditional_distribution,
-        symptom_distributions,
-    )
-    acne = Node(disease_distribution, name=disease_name)
-    model = BayesianNetwork(f"{disease_name} predictor")
-    model.add_state(acne)
-    for symptom_state in symptom_states:
-        model.add_state(symptom_state)
-    for symptom_state in symptom_states:
-        model.add_edge(symptom_state, acne)
-    model.bake()
-    return model
+    @staticmethod
+    def get_symptom_distributions_and_states(known_symptoms: List):
+        symptom_distributions = list()
+        symptom_states = list()
+        for (
+            symptom,
+            probability,
+            not_symptom,
+            not_probability,
+        ) in known_symptoms:
+            symptom_distribution = DiscreteDistribution(
+                {"1": float(probability), "0": float(not_probability)}
+            )
+            symptom_distributions.append(symptom_distribution)
+            symptom_states.append((Node(symptom_distribution, name=symptom)))
+        return symptom_distributions, symptom_states
+
+    @staticmethod
+    def get_bayesian_network_model(
+        symptom_distributions: List,
+        symptom_states: List,
+        file_name: str,
+        disease_name: str,
+    ):
+        disease_conditional_distribution = list()
+        for (s1, s2, s3, s4, s5, d, p) in get_from_csv(file_name):
+            disease_conditional_distribution.append([s1, s2, s3, s4, s5, d, float(p)])
+        disease_distribution = ConditionalProbabilityTable(
+            disease_conditional_distribution,
+            symptom_distributions,
+        )
+        disease = Node(disease_distribution, name=disease_name)
+        model = BayesianNetwork(disease_name)
+        model.add_state(disease)
+        for symptom_state in symptom_states:
+            model.add_state(symptom_state)
+            model.add_edge(symptom_state, disease)
+        model.bake()
+        return model
