@@ -1,7 +1,7 @@
 import sys
 from typing import List
 
-from bayesian_network import bayesian_network
+from bayesian_network import BayesianNetworkForDiseasePrediction
 from get_known_list_from_str import get_known_list_from_str
 
 
@@ -22,8 +22,9 @@ if __name__ == "__main__":
     try:
         option = sys.argv[1]
         if option == "-bayesnet":
-            # TODO: Export to bayesnet-specific file
-            bayesian_network(get_symptoms_from_user)
+            BayesianNetworkForDiseasePrediction(
+                get_symptoms_from_user
+            ).predict_with_bayesian_network()
         elif option == "-ann":
             print("TODO: Call ANN implementation")
         elif option == "-h":
