@@ -38,16 +38,18 @@ if __name__ == "__main__":
             print("TODO: Call ANN implementation")
         elif option == "-h":
             print(
-                f"""Usage: {sys.argv[0]} [option]
-            Options and arguments:
-            -h: Help menu
-            -bayesnet : Uses Bayesian Network algorithm
-            -ann : Uses Artificial Neural Network algorithm"""
+                f"Usage: {sys.argv[0]} [option]\n"
+                f"Options and arguments:\n"
+                f"-h: Help menu\n"
+                f"-bayesnet : Uses Bayesian Network algorithm\n"
+                f"-ann : Uses Artificial Neural Network algorithm"
             )
         else:
-            print("You must call this function with arguments '-bayesnet' or '-ann'")
+            print(
+                f"You must call this function with arguments\n"
+                f"Use {sys.argv[0]} -h for help"
+            )
     except IndexError:
         raise SystemExit(
-            f"""Usage: {sys.argv[0]} [option]
-            Use {sys.argv[0]} -h for help"""
+            f"Usage: {sys.argv[0]} [option]\nUse {sys.argv[0]} -h for help"
         )
