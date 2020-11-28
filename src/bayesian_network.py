@@ -1,6 +1,8 @@
+import itertools
 import operator
-from typing import Callable, List
+from typing import Callable, List, OrderedDict
 
+import pandas
 from get_from_csv import get_from_csv
 from pomegranate import (
     DiscreteDistribution,
@@ -14,16 +16,74 @@ class BayesianNetworkForDiseasePrediction:
     def __init__(self, get_symptoms_from_user: Callable):
         self.get_symptoms_from_user = get_symptoms_from_user
 
-    # TODO: Make agnostic to symtoms, diseases, filename, etc.
-    def predict_with_bayesian_network(self):
-        known_symptoms = get_from_csv("Symptom Probability Tables")
-        user_symptoms = self.get_full_symptom_set(
-            self.get_symptoms_from_user, known_symptoms
+    def predict_from_data(self, samples_file_name: str):
+        """
+        This function will predict diseases from symptoms using a given dataset with an expected structure.
+        The dataset structure must be in the format of symptoms in columns 0 to last-1 and diseases in the last column.
+        :param samples_file_name: the name of the csv_file in the csv folder
+        :return: None
+        """
+        samples = pandas.read_csv(
+            f"../csv/{samples_file_name}.csv", delimiter=",", header=None
         )
+        user_symptoms = self.__get_symptoms_from_user(samples)
+        number_symptoms = samples.shape[1] - 1  # number columns in samples
+        model = BayesianNetwork.from_samples(
+            X=samples.values,
+            include_edges=[
+                (symptom, number_symptoms) for symptom in range(number_symptoms)
+            ],
+            exclude_edges=(
+                list(
+                    itertools.combinations(
+                        [symptom for symptom in range(number_symptoms)],
+                        2,
+                    )
+                )
+            ),
+        )
+        model.bake()
+        predicted_disease = model.predict([user_symptoms])[0]
+        prediction_probability = model.probability([predicted_disease])
+        print(
+            f"The predicted disease is {predicted_disease[-1]} with probability: {prediction_probability}"
+        )
+
+    def __get_symptoms_from_user(self, samples):
+        values_from_samples_with_duplicates = pandas.DataFrame(samples).to_dict(
+            orient="list"
+        )
+        values_from_samples = list()
+        for _, values in itertools.islice(
+            values_from_samples_with_duplicates.items(),
+            len(values_from_samples_with_duplicates.items()) - 1,
+        ):
+            values_from_samples = values_from_samples + list(
+                OrderedDict.fromkeys(values)
+            )
+        user_reported_symptoms = self.get_symptoms_from_user(values_from_samples)
+        inferred_symptoms = list()
+        for symptom in list(values_from_samples):
+            if symptom in user_reported_symptoms:
+                inferred_symptoms.append(symptom)
+            else:
+                if not symptom.startswith("not_"):
+                    inferred_symptoms.append(f"not_{symptom}")
+        inferred_symptoms.append(None)  # To infer the disease
+        return inferred_symptoms
+
+    # TODO: Make agnostic to symtoms, diseases, filename, etc.
+    def predict_with_known_dataset(self):
+        """
+        This function will predict diseases from symptoms using a known dataset and known structure.
+        :return: None
+        """
+        known_symptoms = get_from_csv("Symptom Probability Tables")
+        user_symptoms = self.__get_known_symptoms(known_symptoms)
         (
             symptom_distributions,
             symptom_states,
-        ) = self.get_symptom_distributions_and_states(known_symptoms)
+        ) = self.__get_symptom_distributions_and_states(known_symptoms)
         bayesian_networks_of_diseases = list()
         for disease in [
             "Acne",
@@ -34,7 +94,7 @@ class BayesianNetworkForDiseasePrediction:
             "Psoriasis",
         ]:
             bayesian_networks_of_diseases.append(
-                self.get_bayesian_network_model(
+                self.__get_bayesian_network_model(
                     symptom_distributions=symptom_distributions,
                     symptom_states=symptom_states,
                     file_name=f"{disease} Full Conditional Probability Table",
@@ -62,17 +122,17 @@ class BayesianNetworkForDiseasePrediction:
         )
 
     # TODO: Make agnostic to number symptoms
-    @staticmethod
-    def get_full_symptom_set(get_symptoms_from_user: Callable, known_symptoms: List):
-        user_symptoms = get_symptoms_from_user([s for s, _, _, _ in known_symptoms])
+    def __get_known_symptoms(self, known_symptoms: List):
+        user_symptoms = self.get_symptoms_from_user(
+            [s for s, _, _, _ in known_symptoms]
+        )
         symptom_dict = dict()
         for symptom, _, _, _ in known_symptoms:
             symptom_dict[symptom] = 1 if symptom in user_symptoms else 0
         return symptom_dict
 
     # TODO: Make agnostic to symptoms
-    @staticmethod
-    def get_symptom_distributions_and_states(known_symptoms: List):
+    def __get_symptom_distributions_and_states(self, known_symptoms: List):
         symptom_distributions = list()
         symptom_states = list()
         for (
@@ -89,8 +149,8 @@ class BayesianNetworkForDiseasePrediction:
         return symptom_distributions, symptom_states
 
     # TODO: Make agnostic to number symptoms
-    @staticmethod
-    def get_bayesian_network_model(
+    def __get_bayesian_network_model(
+        self,
         symptom_distributions: List,
         symptom_states: List,
         file_name: str,
