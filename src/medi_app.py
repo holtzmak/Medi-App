@@ -24,7 +24,17 @@ if __name__ == "__main__":
         if option == "-bayesnet":
             BayesianNetworkForDiseasePrediction(
                 get_symptoms_from_user
-            ).predict_with_bayesian_network()
+            ).predict_with_known_dataset()
+        elif option == "-bayesnet_from_file":
+            try:
+                file_name = sys.argv[2]
+                BayesianNetworkForDiseasePrediction(
+                    get_symptoms_from_user
+                ).predict_from_data(file_name)
+            except IndexError:
+                raise SystemExit(
+                    f"Usage: {sys.argv[0]} {option} [filename]\nUse {sys.argv[0]} -h for help"
+                )
         elif option == "-ann":
             print("TODO: Call ANN implementation")
         elif option == "-h":
@@ -33,6 +43,7 @@ if __name__ == "__main__":
                 f"Options and arguments:\n"
                 f"-h: Help menu\n"
                 f"-bayesnet : Uses Bayesian Network algorithm\n"
+                f"-bayesnet_from_file filename : Uses Bayesian Network Algorithm with samples in the csv folder under the given filename\n"
                 f"-ann : Uses Artificial Neural Network algorithm"
             )
         else:
