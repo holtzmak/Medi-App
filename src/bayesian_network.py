@@ -46,7 +46,7 @@ class BayesianNetworkForDiseasePrediction:
         predicted_disease = model.predict([user_symptoms])[0]
         prediction_probability = model.probability([predicted_disease])
         print(
-            f"The predicted disease is {predicted_disease[-1]} with probability: {prediction_probability}"
+            f"The predicted disease is {predicted_disease[-1]} with probability of {prediction_probability}"
         )
 
     def __get_symptoms_from_user(self, samples):
