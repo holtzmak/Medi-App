@@ -2,6 +2,7 @@ import sys
 from typing import List
 
 from bayesian_network import BayesianNetworkForDiseasePrediction
+from ann import ArtificialNeuralNetwork
 from get_known_list_from_str import get_known_list_from_str
 
 
@@ -36,7 +37,11 @@ if __name__ == "__main__":
                     f"Usage: {sys.argv[0]} {option} [filename]\nUse {sys.argv[0]} -h for help"
                 )
         elif option == "-ann":
-            print("TODO: Call ANN implementation")
+            if __name__ == "__main__":
+                ann=ArtificialNeuralNetwork()
+                ann.data_sweep()
+                ann.ann_train_test_split()
+                ann.ann_training()
         elif option == "-h":
             print(
                 f"Usage: {sys.argv[0]} [option]\n"
