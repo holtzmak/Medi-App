@@ -1,8 +1,8 @@
 import sys
 from typing import List
 
-from bayesian_network import BayesianNetworkForDiseasePrediction
 from ann import ArtificialNeuralNetwork
+from bayesian_network import BayesianNetworkForDiseasePrediction
 from get_known_list_from_str import get_known_list_from_str
 
 
@@ -38,10 +38,10 @@ if __name__ == "__main__":
                 )
         elif option == "-ann":
             if __name__ == "__main__":
-                ann=ArtificialNeuralNetwork()
-                ann.data_sweep()
-                ann.ann_train_test_split()
-                ann.ann_training()
+                ann = ArtificialNeuralNetwork()
+                x, y = ann.data_sweep()
+                x_train, x_test, y_train, y_test = ann.ann_train_test_split(x, y)
+                ann.ann_training(x_train, x_test, y_train, y_test)
         elif option == "-h":
             print(
                 f"Usage: {sys.argv[0]} [option]\n"
