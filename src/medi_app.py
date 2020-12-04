@@ -1,4 +1,5 @@
 import sys
+from timeit import default_timer
 from typing import List
 
 from ann import ArtificialNeuralNetwork
@@ -38,10 +39,15 @@ if __name__ == "__main__":
                 )
         elif option == "-ann":
             if __name__ == "__main__":
+                program_start = default_timer()
                 ann = ArtificialNeuralNetwork()
                 x, y = ann.data_sweep()
                 x_train, x_test, y_train, y_test = ann.ann_train_test_split(x, y)
                 ann.ann_training(x_train, x_test, y_train, y_test)
+                program_end = default_timer()
+                print(
+                    f"The ANN Implementation completed in {program_end - program_start} seconds"
+                )
         elif option == "-h":
             print(
                 f"Usage: {sys.argv[0]} [option]\n"

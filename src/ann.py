@@ -1,3 +1,5 @@
+from timeit import default_timer
+
 import pandas
 from sklearn import preprocessing
 from sklearn.metrics import classification_report, confusion_matrix
@@ -39,11 +41,16 @@ class ArtificialNeuralNetwork:
 
     @staticmethod
     def ann_training(x_train, x_test, y_train, y_test):
+        model_start_time = default_timer()
         mlp = MLPClassifier(hidden_layer_sizes=(5, 5, 5), max_iter=1000)
         mlp.fit(x_train, y_train)
         predictions = mlp.predict(x_test)
         clf = SVC(random_state=0)
         clf.fit(x_train, y_train)
+        model_end_time = default_timer()
+        print(
+            f"Model finished construction in {model_end_time - model_start_time} seconds"
+        )
         plot_confusion_matrix(clf, x_test, y_test)
         print("The ANN reported:")
         print(confusion_matrix(y_test, predictions))
