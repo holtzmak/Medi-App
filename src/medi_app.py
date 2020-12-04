@@ -46,7 +46,7 @@ if __name__ == "__main__":
                 ann.ann_training(x_train, x_test, y_train, y_test)
                 program_end = default_timer()
                 print(
-                    f"The ANN Implementation completed in {program_end - program_start} seconds"
+                    f"The ANN implementation completed in {program_end - program_start} seconds"
                 )
         elif option == "-h":
             print(
