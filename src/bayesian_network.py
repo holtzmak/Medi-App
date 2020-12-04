@@ -1,5 +1,6 @@
 import itertools
 import operator
+from timeit import default_timer
 from typing import Callable, List, OrderedDict
 
 import pandas
@@ -23,11 +24,15 @@ class BayesianNetworkForDiseasePrediction:
         :param samples_file_name: the name of the csv_file in the csv folder
         :return: None
         """
+        program_start_before_input = default_timer()
         samples = pandas.read_csv(
             f"../csv/{samples_file_name}.csv", delimiter=",", header=None
         )
+        program_end_before_input = default_timer()
         user_symptoms = self.__get_symptoms_from_user(samples)
+        program_start_after_input = default_timer()
         number_symptoms = samples.shape[1] - 1  # number columns in samples
+        model_start_time = default_timer()
         model = BayesianNetwork.from_samples(
             X=samples.values,
             include_edges=[
@@ -43,10 +48,21 @@ class BayesianNetworkForDiseasePrediction:
             ),
         )
         model.bake()
+        model_end_time = default_timer()
+        print(
+            f"Model finished construction in {model_end_time - model_start_time} seconds"
+        )
         predicted_disease = model.predict([user_symptoms])[0]
         prediction_probability = model.probability([predicted_disease])
         print(
             f"The predicted disease is {predicted_disease[-1]} with probability of {prediction_probability}"
+        )
+        program_end_after_input = default_timer()
+        full_program_runtime = (
+            program_end_before_input - program_start_before_input
+        ) + (program_end_after_input - program_start_after_input)
+        print(
+            f"The Bayes's Net implementation completed in {full_program_runtime} seconds"
         )
 
     def __get_symptoms_from_user(self, samples):
