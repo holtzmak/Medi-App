@@ -10,8 +10,6 @@ Medi-App provides the symptom-to-illness investigation of online clinical databa
 
 Anonymous (Nirma University) (2020). Disease Prediction Using Machine Learning (Version 1) [Data set]. Kaggle. https://www.kaggle.com/kaushil268/disease-prediction-using-machine-learning
 
-***
-
 ## Project Proposed
 
 Our team aimed to create an application to support the self-diagnosing of illnesses; where users of the application do not need to search through clinical websites such as [Mayo Clinic](www.mayoclinic.org) to investigate their possible mystery illness. Instead, we proposed that users enter their symptoms into the application to sort them out. We intended to use a reasonably fast and accurate artificial intelligence algorithm (within some example, educational allowance) to achieve legitimate results from the user’s input symptoms to the suggested output illnesses.
